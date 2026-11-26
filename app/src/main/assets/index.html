@@ -1,0 +1,2565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CourtLog — Basketball Referee Game Tracker &amp; Analytics</title>
+  <style>
+    :root {
+      --bg: #f1f5f9;
+      --surface: #ffffff;
+      --surface-alt: #f8fafc;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --accent: #ea580c;
+      --accent-hover: #c2410c;
+      --accent-soft: #fff7ed;
+      --cc: #3b82f6;
+      --cc-bg: #dbeafe;
+      --cc-text: #1e40af;
+      --u1: #22c55e;
+      --u1-bg: #dcfce7;
+      --u1-text: #166534;
+      --u2: #a855f7;
+      --u2-bg: #f3e8ff;
+      --u2-text: #6b21a8;
+      --away: #0284c7;
+      --success: #16a34a;
+      --success-soft: #f0fdf4;
+      --warn: #d97706;
+      --warn-soft: #fffbeb;
+      --danger: #dc2626;
+      --danger-soft: #fef2f2;
+      --radius: 12px;
+      --shadow: 0 1px 3px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.04);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    header {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: #fff;
+      padding: 1rem 1.25rem;
+      border-bottom: 3px solid var(--accent);
+      position: sticky;
+      top: 0;
+      z-index: 30;
+    }
+
+    .header-inner {
+      max-width: 1260px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.4rem;
+    }
+
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      flex-shrink: 0;
+      margin-right: 0.75rem;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+
+    .brand p {
+      margin: 0;
+      font-size: 0.78rem;
+      color: #94a3b8;
+    }
+
+    .header-controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .profile-box {
+      display: flex;
+      align-items: center;
+      background: rgba(15, 23, 42, 0.65);
+      padding: 0.4rem 0.7rem;
+      border-radius: 8px;
+      border: 1px solid #334155;
+      margin-right: 0.5rem;
+      margin-bottom: 0.3rem;
+    }
+
+    .profile-box label {
+      font-size: 0.78rem;
+      color: #cbd5e1;
+      white-space: nowrap;
+      margin: 0 0.45rem 0 0;
+    }
+
+    .profile-box input,
+    .profile-box select {
+      background: #0f172a;
+      border: 1px solid #475569;
+      color: #fff;
+      padding: 0.32rem 0.5rem;
+      border-radius: 6px;
+      font-size: 0.84rem;
+      width: auto;
+    }
+
+    .profile-box input { width: 155px; }
+
+    main {
+      max-width: 1260px;
+      margin: 1.25rem auto;
+      padding: 0 0.85rem 3.5rem;
+      display: grid;
+      grid-gap: 1.15rem;
+      gap: 1.15rem;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      grid-gap: 0.8rem;
+      gap: 0.8rem;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.95rem 1.05rem;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background: var(--border);
+    }
+    .stat-card.accent-bar::after { background: var(--accent); }
+    .stat-card.cc-bar::after { background: var(--cc); }
+    .stat-card.u1-bar::after { background: var(--u1); }
+    .stat-card.u2-bar::after { background: var(--u2); }
+    .stat-card.fee-bar::after { background: var(--success); }
+
+    .stat-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+    }
+
+    .stat-value {
+      font-size: 1.6rem;
+      font-weight: 800;
+      margin-top: 0.2rem;
+      line-height: 1.2;
+    }
+
+    .stat-sub {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 0.2rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.15rem;
+      box-shadow: var(--shadow);
+    }
+
+    .card-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.9rem;
+    }
+
+    .card-title {
+      margin: 0;
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+
+    .insights-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      grid-gap: 0.75rem;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .insight-pill {
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.75rem 0.9rem;
+      display: flex;
+      align-items: flex-start;
+    }
+
+    .insight-pill.clickable { cursor: pointer; }
+
+    .insight-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: var(--accent-soft);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+      margin-right: 0.65rem;
+    }
+
+    .insight-kicker {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+    }
+
+    .insight-main {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.25;
+      margin-top: 0.1rem;
+    }
+
+    .insight-detail {
+      font-size: 0.76rem;
+      color: var(--muted);
+      margin-top: 0.1rem;
+    }
+
+    .analytics-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      grid-gap: 1rem;
+      gap: 1rem;
+    }
+
+    .chart-box {
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.95rem;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chart-box > * + * { margin-top: 0.7rem; }
+
+    .span-7 { grid-column: span 7; }
+    .span-5 { grid-column: span 5; }
+    .span-6 { grid-column: span 6; }
+
+    @media (max-width: 960px) {
+      .span-7, .span-5, .span-6 { grid-column: span 12; }
+    }
+
+    .chart-head {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .chart-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--text);
+      margin: 0;
+    }
+
+    .chart-sub {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .seg-control {
+      display: inline-flex;
+      background: #e2e8f0;
+      padding: 2px;
+      border-radius: 7px;
+      margin-top: 0.25rem;
+    }
+
+    .seg-btn {
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-size: 0.74rem;
+      font-weight: 700;
+      padding: 0.25rem 0.6rem;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .seg-btn.active {
+      background: #fff;
+      color: var(--text);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+    }
+
+    .svg-wrap { width: 100%; overflow-x: auto; }
+    .svg-chart { width: 100%; height: auto; display: block; }
+    .chart-bar-interactive { cursor: pointer; }
+
+    .donut-layout {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .donut-wrap {
+      position: relative;
+      width: 140px;
+      height: 140px;
+      flex-shrink: 0;
+      margin-right: 1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .donut-center {
+      position: absolute;
+      top: 0; right: 0; bottom: 0; left: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+
+    .donut-center strong { font-size: 1.35rem; line-height: 1.1; }
+    .donut-center span { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; font-weight: 700; }
+
+    .donut-legend {
+      flex: 1;
+      min-width: 170px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .legend-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.81rem;
+      padding: 0.25rem 0.45rem;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-bottom: 0.25rem;
+    }
+    .legend-row:hover { background: #e2e8f0; }
+    .legend-row.active { background: var(--accent-soft); outline: 1px solid #fdba74; }
+
+    .legend-left { display: flex; align-items: center; font-weight: 600; }
+    .legend-dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-right: 0.45rem;
+    }
+    .legend-right { color: var(--muted); font-size: 0.78rem; white-space: nowrap; }
+
+    .hbar-list { display: flex; flex-direction: column; }
+    .hbar-item {
+      cursor: pointer;
+      padding: 0.3rem 0.45rem;
+      border-radius: 7px;
+      margin-bottom: 0.4rem;
+    }
+    .hbar-item:hover { background: #e2e8f0; }
+    .hbar-item.active { background: var(--accent-soft); outline: 1px solid #fdba74; }
+
+    .hbar-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: 0.81rem;
+      margin-bottom: 0.22rem;
+    }
+    .hbar-name { font-weight: 600; margin-right: 0.5rem; }
+    .hbar-val { font-size: 0.76rem; color: var(--muted); white-space: nowrap; }
+
+    .hbar-track {
+      height: 9px;
+      border-radius: 999px;
+      background: #e2e8f0;
+      overflow: hidden;
+      display: flex;
+    }
+    .hbar-seg { height: 100%; }
+
+    .weekday-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      grid-gap: 0.45rem;
+      gap: 0.45rem;
+      align-items: end;
+      height: 135px;
+      padding-top: 1.25rem;
+    }
+
+    .weekday-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100%;
+      justify-content: flex-end;
+    }
+    .weekday-count { font-size: 0.72rem; font-weight: 700; color: var(--muted); margin-bottom: 0.25rem; }
+    .weekday-bar-wrap {
+      width: 100%;
+      max-width: 34px;
+      flex: 1;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .weekday-bar {
+      width: 100%;
+      border-radius: 6px 6px 3px 3px;
+      background: #94a3b8;
+      min-height: 4px;
+    }
+    .weekday-bar.peak { background: var(--accent); }
+    .weekday-bar.zero { background: #e2e8f0; height: 4px !important; }
+    .weekday-label { font-size: 0.74rem; font-weight: 700; color: var(--muted); margin-top: 0.25rem; }
+
+    .mini-legend {
+      display: flex;
+      flex-wrap: wrap;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+    .mini-legend > span {
+      display: inline-flex;
+      align-items: center;
+      margin-right: 0.75rem;
+    }
+
+    #chartTooltip {
+      position: fixed;
+      pointer-events: none;
+      background: #0f172a;
+      color: #fff;
+      padding: 0.5rem 0.7rem;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      line-height: 1.4;
+      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.28);
+      z-index: 100;
+      max-width: 240px;
+      opacity: 0;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      grid-gap: 0.85rem;
+      gap: 0.85rem;
+    }
+
+    .field { display: flex; flex-direction: column; }
+    .field > label, .field > .label-row { margin-bottom: 0.3rem; }
+
+    .col-2 { grid-column: span 2; }
+    .col-3 { grid-column: span 3; }
+    .col-4 { grid-column: span 4; }
+    .col-12 { grid-column: span 12; }
+
+    @media (max-width: 900px) {
+      .col-2, .col-3, .col-4 { grid-column: span 6; }
+    }
+    @media (max-width: 600px) {
+      .col-2, .col-3, .col-4 { grid-column: span 12; }
+    }
+
+    label { font-size: 0.8rem; font-weight: 600; color: #334155; }
+
+    input[type="text"],
+    input[type="date"],
+    input[type="time"],
+    input[type="number"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 0.52rem 0.7rem;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      font-size: 0.9rem;
+      font-family: inherit;
+      background: #fff;
+      color: var(--text);
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.12);
+    }
+
+    .label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .quick-me {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--accent);
+      background: var(--accent-soft);
+      border: 1px solid #fed7aa;
+      border-radius: 5px;
+      padding: 0.1rem 0.4rem;
+      cursor: pointer;
+    }
+
+    .extras-toggle {
+      display: inline-flex;
+      align-items: center;
+      font-size: 0.82rem;
+      color: var(--muted);
+      background: none;
+      border: none;
+      padding: 0.25rem 0;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .extras-box {
+      background: var(--surface-alt);
+      border: 1px dashed var(--border);
+      border-radius: 9px;
+      padding: 0.9rem;
+    }
+
+    .score-pair { display: flex; align-items: center; }
+    .score-pair span { color: var(--muted); font-weight: 700; margin: 0 0.35rem; }
+
+    .checkbox-inline {
+      display: flex;
+      align-items: center;
+      padding-top: 1.45rem;
+      font-size: 0.86rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .checkbox-inline input { width: 16px; height: 16px; margin-right: 0.45rem; }
+
+    .form-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-top: 0.25rem;
+    }
+    .form-actions > button { margin-right: 0.5rem; margin-bottom: 0.35rem; }
+
+    button, .btn-file {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.52rem 0.95rem;
+      border-radius: 7px;
+      font-size: 0.86rem;
+      font-weight: 600;
+      border: 1px solid transparent;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-secondary { background: var(--surface-alt); color: var(--text); border-color: var(--border); }
+    .btn-warn { background: var(--warn-soft); color: var(--warn); border-color: #fde68a; }
+    .btn-danger { background: var(--danger-soft); color: var(--danger); border-color: #fecaca; }
+    .btn-sm { padding: 0.3rem 0.58rem; font-size: 0.77rem; }
+
+    .active-pills { display: flex; flex-wrap: wrap; margin-top: 0.45rem; }
+    .active-filter-pill {
+      display: inline-flex;
+      align-items: center;
+      background: var(--accent-soft);
+      color: var(--accent-hover);
+      border: 1px solid #fed7aa;
+      border-radius: 999px;
+      padding: 0.15rem 0.6rem;
+      font-size: 0.76rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-right: 0.4rem;
+      margin-bottom: 0.3rem;
+    }
+
+    .toolbar { margin-bottom: 0.9rem; }
+    .filters { display: flex; flex-wrap: wrap; }
+    .filters > * { margin-right: 0.5rem; margin-bottom: 0.5rem; }
+    .filters input { max-width: 240px; }
+    .filters select { max-width: 165px; }
+
+    .data-actions { display: flex; flex-wrap: wrap; margin-top: 0.35rem; }
+    .data-actions > * { margin-right: 0.4rem; margin-bottom: 0.35rem; }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.89rem;
+      min-width: 820px;
+    }
+
+    th {
+      text-align: left;
+      background: var(--surface-alt);
+      color: var(--muted);
+      font-size: 0.73rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 0.72rem 0.85rem;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 0.78rem 0.85rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    .badge {
+      display: inline-block;
+      padding: 0.16rem 0.5rem;
+      border-radius: 999px;
+      font-size: 0.74rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .badge-cat { background: var(--accent-soft); color: var(--accent-hover); border: 1px solid #fed7aa; }
+    .badge-mech { background: #f1f5f9; color: #475569; border: 1px solid var(--border); margin-left: 0.25rem; }
+    .badge-paid { background: var(--success-soft); color: var(--success); border: 1px solid #bbf7d0; }
+    .badge-unpaid { background: var(--warn-soft); color: var(--warn); border: 1px solid #fde68a; }
+
+    .crew-list { display: flex; flex-wrap: wrap; }
+    .crew-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.18rem 0.5rem;
+      border-radius: 6px;
+      font-size: 0.79rem;
+      margin-right: 0.35rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .role-tag { font-weight: 800; font-size: 0.69rem; margin-right: 0.3rem; }
+    .crew-cc { background: var(--cc-bg); color: var(--cc-text); }
+    .crew-u1 { background: var(--u1-bg); color: var(--u1-text); }
+    .crew-u2 { background: var(--u2-bg); color: var(--u2-text); }
+    .crew-me { outline: 2px solid #0f172a; font-weight: 700; }
+
+    .teams-cell { font-weight: 600; }
+    .vs-muted { color: var(--muted); font-weight: 400; margin: 0 0.25rem; }
+    .sub-meta { font-size: 0.76rem; color: var(--muted); font-weight: 400; margin-top: 0.15rem; }
+
+    .row-actions { display: flex; flex-wrap: wrap; }
+    .row-actions > button { margin-right: 0.3rem; margin-bottom: 0.25rem; }
+
+    .empty-state { text-align: center; padding: 2.5rem 1rem; color: var(--muted); }
+    .hidden { display: none !important; }
+
+    @media print {
+      header .profile-box, .form-card, .toolbar, .row-actions, th:last-child, td:last-child, #chartTooltip {
+        display: none !important;
+      }
+      body { background: #fff; }
+      .card { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-inner">
+      <div class="brand">
+        <div class="brand-icon" aria-hidden="true">🏀</div>
+        <div>
+          <h1>CourtLog</h1>
+          <p>Basketball Referee Game Tracker &amp; Analytics</p>
+        </div>
+      </div>
+      <div class="header-controls">
+        <div class="profile-box">
+          <label for="seasonFilter">Season:</label>
+          <select id="seasonFilter">
+            <option value="">All Time</option>
+          </select>
+        </div>
+        <div class="profile-box">
+          <label for="myNameInput">My Name:</label>
+          <input id="myNameInput" type="text" placeholder="e.g. Shadi AlSaleem" />
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="stats-grid" aria-label="Statistics">
+      <div class="stat-card accent-bar">
+        <div class="stat-label">Total Games</div>
+        <div class="stat-value" id="statTotal">0</div>
+        <div class="stat-sub" id="statMechanics">0 × 3PO · 0 × 2PO</div>
+      </div>
+      <div class="stat-card cc-bar">
+        <div class="stat-label">Crew Chief (CC)</div>
+        <div class="stat-value" id="statCC">0</div>
+        <div class="stat-sub" id="statCCSub">Set "My Name" to track</div>
+      </div>
+      <div class="stat-card u1-bar">
+        <div class="stat-label">Umpire 1 (U1)</div>
+        <div class="stat-value" id="statU1">0</div>
+        <div class="stat-sub" id="statU1Sub">Set "My Name" to track</div>
+      </div>
+      <div class="stat-card u2-bar">
+        <div class="stat-label">Umpire 2 (U2)</div>
+        <div class="stat-value" id="statU2">0</div>
+        <div class="stat-sub" id="statU2Sub">3-person mechanics</div>
+      </div>
+      <div class="stat-card fee-bar">
+        <div class="stat-label">Total Revenue</div>
+        <div class="stat-value" id="statFees">—</div>
+        <div class="stat-sub" id="statFeesSub">Optional fee tracking</div>
+      </div>
+    </section>
+
+    <section id="analyticsSection" class="card hidden">
+      <div class="card-header">
+        <div>
+          <h2 class="card-title">📊 Referee Analytics &amp; Insights</h2>
+          <div class="sub-meta">Tap any bar, slice, partner, or team below to filter your Game Log</div>
+        </div>
+        <button type="button" id="toggleAnalyticsBtn" class="btn-secondary btn-sm">Collapse Charts</button>
+      </div>
+
+      <div id="analyticsBody">
+        <div id="insightsStrip" class="insights-strip"></div>
+
+        <div class="analytics-grid">
+          <div class="chart-box span-7">
+            <div class="chart-head">
+              <div>
+                <h3 class="chart-title">Monthly Activity &amp; Revenue</h3>
+                <div class="chart-sub">Tap a month bar to filter games</div>
+              </div>
+              <div class="seg-control" role="tablist">
+                <button type="button" class="seg-btn active" data-monthly-mode="games">Games</button>
+                <button type="button" class="seg-btn" data-monthly-mode="revenue">Revenue</button>
+              </div>
+            </div>
+            <div class="svg-wrap" id="monthlyChartWrap"></div>
+            <div class="mini-legend" id="monthlyLegend"></div>
+          </div>
+
+          <div class="chart-box span-5">
+            <div class="chart-head">
+              <div>
+                <h3 class="chart-title" id="roleDonutTitle">My Role Split</h3>
+                <div class="chart-sub">Tap a role to filter</div>
+              </div>
+            </div>
+            <div id="roleDonutContainer"></div>
+          </div>
+
+          <div class="chart-box span-6">
+            <div class="chart-head">
+              <div>
+                <h3 class="chart-title">Games &amp; Revenue by Category</h3>
+                <div class="chart-sub">Tap a category to filter</div>
+              </div>
+            </div>
+            <div id="categoryDonutContainer"></div>
+          </div>
+
+          <div class="chart-box span-6">
+            <div class="chart-head">
+              <div>
+                <h3 class="chart-title">Court Days (Day of Week)</h3>
+                <div class="chart-sub">Which days you officiate most often</div>
+              </div>
+            </div>
+            <div id="weekdayChartContainer"></div>
+          </div>
+
+          <div class="chart-box span-6">
+            <div class="chart-head">
+              <div>
+                <h3 class="chart-title">Crewmate Chemistry</h3>
+                <div class="chart-sub">Top partners &amp; their positions alongside you</div>
+              </div>
+              <div class="mini-legend">
+                <span><span class="legend-dot" style="background:var(--cc)"></span>as CC</span>
+                <span><span class="legend-dot" style="background:var(--u1)"></span>as U1</span>
+                <span><span class="legend-dot" style="background:var(--u2)"></span>as U2</span>
+              </div>
+            </div>
+            <div id="partnersChartContainer" class="hbar-list"></div>
+          </div>
+
+          <div class="chart-box span-6">
+            <div class="chart-head">
+              <div>
+                <h3 class="chart-title">Most Officiated Teams</h3>
+                <div class="chart-sub">Home vs. Away appearances</div>
+              </div>
+              <div class="mini-legend">
+                <span><span class="legend-dot" style="background:var(--accent)"></span>Home</span>
+                <span><span class="legend-dot" style="background:var(--away)"></span>Away</span>
+              </div>
+            </div>
+            <div id="teamsChartContainer" class="hbar-list"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card form-card">
+      <div class="card-header">
+        <h2 class="card-title" id="formTitle">Log New Game</h2>
+        <button type="button" id="toggleExtrasBtn" class="extras-toggle">+ Show Optional Details (Venue, Score, Fee, Notes)</button>
+      </div>
+      <form id="gameForm">
+        <input type="hidden" id="gameId" />
+        <div class="form-grid">
+          <div class="field col-3">
+            <label for="dateInput">Date *</label>
+            <input id="dateInput" type="date" required />
+          </div>
+          <div class="field col-3">
+            <label for="categoryInput">Category *</label>
+            <input id="categoryInput" type="text" list="categorySuggestions" placeholder="e.g. Men U18 D1, Women U16 D1" required />
+            <datalist id="categorySuggestions"></datalist>
+          </div>
+          <div class="field col-3">
+            <label for="homeInput">Home Team *</label>
+            <input id="homeInput" type="text" list="teamSuggestions" placeholder="Home team" required />
+          </div>
+          <div class="field col-3">
+            <label for="awayInput">Away Team *</label>
+            <input id="awayInput" type="text" list="teamSuggestions" placeholder="Away team" required />
+          </div>
+
+          <div class="field col-4">
+            <div class="label-row">
+              <label for="ccInput">Crew Chief (CC) *</label>
+              <button type="button" class="quick-me hidden" data-role-fill="cc">I'm CC</button>
+            </div>
+            <input id="ccInput" type="text" list="refSuggestions" placeholder="Crew Chief name" required />
+          </div>
+          <div class="field col-4">
+            <div class="label-row">
+              <label for="u1Input">Umpire 1 (U1) *</label>
+              <button type="button" class="quick-me hidden" data-role-fill="u1">I'm U1</button>
+            </div>
+            <input id="u1Input" type="text" list="refSuggestions" placeholder="Umpire 1 name" required />
+          </div>
+          <div class="field col-4">
+            <div class="label-row">
+              <label for="u2Input">Umpire 2 (U2) <span style="font-weight:400;color:#64748b;">(optional for 2PO)</span></label>
+              <button type="button" class="quick-me hidden" data-role-fill="u2">I'm U2</button>
+            </div>
+            <input id="u2Input" type="text" list="refSuggestions" placeholder="Umpire 2 name" />
+          </div>
+
+          <div id="extrasBox" class="col-12 extras-box hidden">
+            <div class="form-grid">
+              <div class="field col-2">
+                <label for="timeInput">Tip-off Time</label>
+                <input id="timeInput" type="time" />
+              </div>
+              <div class="field col-4">
+                <label for="venueInput">Gym / Venue</label>
+                <input id="venueInput" type="text" list="venueSuggestions" placeholder="e.g. Main Arena" />
+              </div>
+              <div class="field col-2">
+                <label>Final Score (H - A)</label>
+                <div class="score-pair">
+                  <input id="homeScoreInput" type="number" min="0" placeholder="H" aria-label="Home score" />
+                  <span>-</span>
+                  <input id="awayScoreInput" type="number" min="0" placeholder="A" aria-label="Away score" />
+                </div>
+              </div>
+              <div class="field col-2">
+                <label for="feeInput">Game Fee</label>
+                <input id="feeInput" type="number" min="0" step="0.01" placeholder="e.g. 3587" />
+              </div>
+              <div class="field col-2">
+                <label class="checkbox-inline">
+                  <input id="paidInput" type="checkbox" />
+                  Fee Paid
+                </label>
+              </div>
+              <div class="field col-12">
+                <label for="notesInput">Referee Notes (technicals, observations, mechanics)</label>
+                <textarea id="notesInput" rows="2" placeholder="Optional post-game notes..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12 form-actions">
+            <button type="submit" id="submitBtn" class="btn-primary">Save Game</button>
+            <button type="button" id="cancelEditBtn" class="btn-secondary hidden">Cancel Edit</button>
+          </div>
+        </div>
+        <datalist id="teamSuggestions"></datalist>
+        <datalist id="refSuggestions"></datalist>
+        <datalist id="venueSuggestions"></datalist>
+      </form>
+    </section>
+
+    <section class="card" id="gameLogCard">
+      <div class="card-header">
+        <div>
+          <h2 class="card-title">Game Log</h2>
+          <div id="resultCount" class="sub-meta">0 games shown</div>
+          <div id="activeFilterPills" class="active-pills hidden"></div>
+        </div>
+        <div class="data-actions">
+          <button type="button" id="fixPlaceholderBtn" class="btn-warn btn-sm hidden">Fix "Your Name" in Games</button>
+          <button type="button" id="loadSampleBtn" class="btn-secondary btn-sm">Load Sample</button>
+          <button type="button" id="exportCsvBtn" class="btn-secondary btn-sm">Export CSV</button>
+          <button type="button" id="exportJsonBtn" class="btn-secondary btn-sm">Backup JSON</button>
+          <label class="btn-secondary btn-sm btn-file" for="importJsonInput">
+            Import JSON
+            <input id="importJsonInput" type="file" accept=".json,application/json" class="hidden" />
+          </label>
+          <button type="button" id="printBtn" class="btn-secondary btn-sm">Print</button>
+          <button type="button" id="clearAllBtn" class="btn-danger btn-sm">Clear All</button>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div class="filters">
+          <input id="searchInput" type="text" placeholder="Search team, category, official, venue..." />
+          <select id="filterCategory">
+            <option value="">All Categories</option>
+          </select>
+          <select id="filterRole">
+            <option value="">All Roles</option>
+            <option value="CC">My Role: CC</option>
+            <option value="U1">My Role: U1</option>
+            <option value="U2">My Role: U2</option>
+          </select>
+          <select id="filterMechanics">
+            <option value="">All Mechanics</option>
+            <option value="3PO">3-Person (3PO)</option>
+            <option value="2PO">2-Person (2PO)</option>
+          </select>
+          <select id="filterFeeStatus">
+            <option value="">All Fee Status</option>
+            <option value="paid">Paid</option>
+            <option value="unpaid">Unpaid</option>
+          </select>
+          <button type="button" id="resetFiltersBtn" class="btn-secondary btn-sm hidden">Clear Filters</button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Teams &amp; Score</th>
+              <th>Category</th>
+              <th>Crew (CC / U1 / U2)</th>
+              <th>Details</th>
+              <th style="width:165px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="gamesTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <div id="chartTooltip" role="tooltip"></div>
+
+  <script>
+    const STORAGE_KEY = "courtlog_games_v1";
+    const PROFILE_KEY = "courtlog_my_name_v1";
+
+    const DEFAULT_CATEGORIES = [
+      "Seniors Men D1",
+      "Seniors Men D2",
+      "Seniors Women D1",
+      "Seniors Women D2",
+      "Men U18 D1",
+      "Men U16 D1",
+      "Women U18 D1",
+      "Women U16 D1",
+      "Men U18 D2",
+      "Men U16 D2",
+      "Women U18",
+      "Women U16",
+      "U20",
+      "Cup"
+    ];
+
+    const CAT_PALETTE = [
+      "#ea580c", "#2563eb", "#16a34a", "#9333ea",
+      "#0891b2", "#d97706", "#db2777", "#4f46e5"
+    ];
+
+    const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const WEEKDAY_ORDER = [
+      { idx: 1, label: "Mon" },
+      { idx: 2, label: "Tue" },
+      { idx: 3, label: "Wed" },
+      { idx: 4, label: "Thu" },
+      { idx: 5, label: "Fri" },
+      { idx: 6, label: "Sat" },
+      { idx: 0, label: "Sun" }
+    ];
+
+    function valOr(v, fallback) {
+      return (v !== undefined && v !== null) ? v : fallback;
+    }
+
+    let games = loadGames();
+    let myName = localStorage.getItem(PROFILE_KEY) || "";
+    if (isPlaceholderName(myName)) myName = "";
+
+    let activePartnerFilter = "";
+    let activeTeamFilter = "";
+    let activeMonthFilter = "";
+    let monthlyChartMode = "games";
+    let analyticsCollapsed = false;
+
+    const myNameInput = document.getElementById("myNameInput");
+    const seasonFilter = document.getElementById("seasonFilter");
+    const gameForm = document.getElementById("gameForm");
+    const formTitle = document.getElementById("formTitle");
+    const gameIdInput = document.getElementById("gameId");
+    const dateInput = document.getElementById("dateInput");
+    const timeInput = document.getElementById("timeInput");
+    const categoryInput = document.getElementById("categoryInput");
+    const homeInput = document.getElementById("homeInput");
+    const awayInput = document.getElementById("awayInput");
+    const ccInput = document.getElementById("ccInput");
+    const u1Input = document.getElementById("u1Input");
+    const u2Input = document.getElementById("u2Input");
+    const venueInput = document.getElementById("venueInput");
+    const homeScoreInput = document.getElementById("homeScoreInput");
+    const awayScoreInput = document.getElementById("awayScoreInput");
+    const feeInput = document.getElementById("feeInput");
+    const paidInput = document.getElementById("paidInput");
+    const notesInput = document.getElementById("notesInput");
+    const extrasBox = document.getElementById("extrasBox");
+    const toggleExtrasBtn = document.getElementById("toggleExtrasBtn");
+    const submitBtn = document.getElementById("submitBtn");
+    const cancelEditBtn = document.getElementById("cancelEditBtn");
+    const fixPlaceholderBtn = document.getElementById("fixPlaceholderBtn");
+
+    const analyticsSection = document.getElementById("analyticsSection");
+    const analyticsBody = document.getElementById("analyticsBody");
+    const toggleAnalyticsBtn = document.getElementById("toggleAnalyticsBtn");
+    const chartTooltip = document.getElementById("chartTooltip");
+
+    const searchInput = document.getElementById("searchInput");
+    const filterCategory = document.getElementById("filterCategory");
+    const filterRole = document.getElementById("filterRole");
+    const filterMechanics = document.getElementById("filterMechanics");
+    const filterFeeStatus = document.getElementById("filterFeeStatus");
+    const resetFiltersBtn = document.getElementById("resetFiltersBtn");
+    const activeFilterPills = document.getElementById("activeFilterPills");
+    const gamesTableBody = document.getElementById("gamesTableBody");
+    const resultCount = document.getElementById("resultCount");
+
+    const statTotal = document.getElementById("statTotal");
+    const statMechanics = document.getElementById("statMechanics");
+    const statCC = document.getElementById("statCC");
+    const statU1 = document.getElementById("statU1");
+    const statU2 = document.getElementById("statU2");
+    const statCCSub = document.getElementById("statCCSub");
+    const statU1Sub = document.getElementById("statU1Sub");
+    const statU2Sub = document.getElementById("statU2Sub");
+    const statFees = document.getElementById("statFees");
+    const statFeesSub = document.getElementById("statFeesSub");
+
+    myNameInput.value = myName;
+    setDefaultDate();
+    render();
+
+    myNameInput.addEventListener("input", () => {
+      myName = myNameInput.value.trim();
+      localStorage.setItem(PROFILE_KEY, myName);
+      activePartnerFilter = "";
+      render();
+    });
+
+    seasonFilter.addEventListener("change", () => {
+      activePartnerFilter = "";
+      activeTeamFilter = "";
+      activeMonthFilter = "";
+      render();
+    });
+
+    toggleAnalyticsBtn.addEventListener("click", () => {
+      analyticsCollapsed = !analyticsCollapsed;
+      analyticsBody.classList.toggle("hidden", analyticsCollapsed);
+      toggleAnalyticsBtn.textContent = analyticsCollapsed ? "Show Charts" : "Collapse Charts";
+    });
+
+    document.querySelectorAll("[data-monthly-mode]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        monthlyChartMode = btn.getAttribute("data-monthly-mode");
+        document.querySelectorAll("[data-monthly-mode]").forEach(b => {
+          b.classList.toggle("active", b === btn);
+        });
+        renderMonthlyChart(getSeasonScopedGames());
+      });
+    });
+
+    toggleExtrasBtn.addEventListener("click", () => {
+      const hidden = extrasBox.classList.toggle("hidden");
+      toggleExtrasBtn.textContent = hidden
+        ? "+ Show Optional Details (Venue, Score, Fee, Notes)"
+        : "− Hide Optional Details";
+    });
+
+    document.querySelectorAll("[data-role-fill]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        if (!myName) return;
+        const role = btn.getAttribute("data-role-fill");
+        if (role === "cc") ccInput.value = myName;
+        if (role === "u1") u1Input.value = myName;
+        if (role === "u2") u2Input.value = myName;
+      });
+    });
+
+    fixPlaceholderBtn.addEventListener("click", () => {
+      const defaultVal = myName && !isPlaceholderName(myName) ? myName : "";
+      const chosen = prompt('Enter your referee name to replace "Your Name" across all saved games:', defaultVal);
+      if (!chosen || !chosen.trim()) return;
+      const cleanName = chosen.trim();
+      myName = cleanName;
+      myNameInput.value = cleanName;
+      localStorage.setItem(PROFILE_KEY, cleanName);
+      const count = replacePlaceholderInGames(games, cleanName);
+      saveGames();
+      render();
+      alert(`Updated ${count} game ${count === 1 ? "entry" : "entries"} to "${cleanName}".`);
+    });
+
+    gameForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const id = gameIdInput.value || generateId();
+      const feeVal = feeInput.value.trim();
+
+      const entry = {
+        id,
+        date: dateInput.value,
+        time: timeInput.value || "",
+        homeTeam: homeInput.value.trim(),
+        awayTeam: awayInput.value.trim(),
+        category: categoryInput.value.trim(),
+        venue: venueInput.value.trim(),
+        homeScore: homeScoreInput.value.trim(),
+        awayScore: awayScoreInput.value.trim(),
+        fee: feeVal === "" ? "" : Number(feeVal),
+        paid: Boolean(paidInput.checked),
+        notes: notesInput.value.trim(),
+        crew: {
+          cc: ccInput.value.trim(),
+          u1: u1Input.value.trim(),
+          u2: u2Input.value.trim()
+        }
+      };
+
+      const existingIdx = games.findIndex(g => g.id === id);
+      if (existingIdx >= 0) {
+        games[existingIdx] = entry;
+      } else {
+        games.push(entry);
+      }
+
+      saveGames();
+      resetForm();
+      render();
+    });
+
+    cancelEditBtn.addEventListener("click", resetForm);
+
+    [searchInput, filterCategory, filterRole, filterMechanics, filterFeeStatus].forEach(el => {
+      el.addEventListener("input", () => { renderAnalytics(); renderTable(); });
+      el.addEventListener("change", () => { renderAnalytics(); renderTable(); });
+    });
+
+    resetFiltersBtn.addEventListener("click", clearAllFilters);
+
+    activeFilterPills.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-clear-filter]");
+      if (!btn) return;
+      const type = btn.getAttribute("data-clear-filter");
+      if (type === "month") activeMonthFilter = "";
+      if (type === "partner") activePartnerFilter = "";
+      if (type === "team") activeTeamFilter = "";
+      if (type === "category") filterCategory.value = "";
+      if (type === "role") filterRole.value = "";
+      if (type === "fee") filterFeeStatus.value = "";
+      renderAnalytics();
+      renderTable();
+    });
+
+    document.addEventListener("mousemove", (e) => {
+      const target = e.target.closest("[data-tip]");
+      if (!target) {
+        chartTooltip.style.opacity = "0";
+        return;
+      }
+      chartTooltip.innerHTML = target.getAttribute("data-tip");
+      chartTooltip.style.opacity = "1";
+      const pad = 14;
+      const rect = chartTooltip.getBoundingClientRect();
+      let left = e.clientX + pad;
+      let top = e.clientY + pad;
+      if (left + rect.width > window.innerWidth - 10) left = e.clientX - rect.width - pad;
+      if (top + rect.height > window.innerHeight - 10) top = e.clientY - rect.height - pad;
+      chartTooltip.style.left = `${left}px`;
+      chartTooltip.style.top = `${top}px`;
+    });
+
+    analyticsSection.addEventListener("click", (e) => {
+      const monthBtn = e.target.closest("[data-filter-month]");
+      if (monthBtn) {
+        const m = monthBtn.getAttribute("data-filter-month");
+        activeMonthFilter = activeMonthFilter === m ? "" : m;
+        renderAnalytics();
+        renderTable();
+        return;
+      }
+      const roleBtn = e.target.closest("[data-filter-role]");
+      if (roleBtn) {
+        const r = roleBtn.getAttribute("data-filter-role");
+        filterRole.value = filterRole.value === r ? "" : r;
+        renderAnalytics();
+        renderTable();
+        return;
+      }
+      const catBtn = e.target.closest("[data-filter-cat]");
+      if (catBtn) {
+        const c = catBtn.getAttribute("data-filter-cat");
+        filterCategory.value = filterCategory.value === c ? "" : c;
+        renderAnalytics();
+        renderTable();
+        return;
+      }
+      const partnerBtn = e.target.closest("[data-filter-partner]");
+      if (partnerBtn) {
+        const p = partnerBtn.getAttribute("data-filter-partner");
+        activePartnerFilter = activePartnerFilter === p ? "" : p;
+        renderAnalytics();
+        renderTable();
+        return;
+      }
+      const teamBtn = e.target.closest("[data-filter-team]");
+      if (teamBtn) {
+        const t = teamBtn.getAttribute("data-filter-team");
+        activeTeamFilter = activeTeamFilter === t ? "" : t;
+        renderAnalytics();
+        renderTable();
+        return;
+      }
+      const feeBtn = e.target.closest("[data-filter-unpaid]");
+      if (feeBtn) {
+        filterFeeStatus.value = filterFeeStatus.value === "unpaid" ? "" : "unpaid";
+        renderAnalytics();
+        renderTable();
+        document.getElementById("gameLogCard").scrollIntoView({ behavior: "smooth" });
+      }
+    });
+
+    gamesTableBody.addEventListener("click", (e) => {
+      const actionBtn = e.target.closest("[data-action]");
+      if (!actionBtn) return;
+      const action = actionBtn.getAttribute("data-action");
+      const id = actionBtn.getAttribute("data-id");
+      if (action === "edit") editGame(id);
+      if (action === "duplicate") duplicateGame(id);
+      if (action === "delete") deleteGame(id);
+      if (action === "toggle-paid") togglePaid(id);
+    });
+
+    document.getElementById("exportCsvBtn").addEventListener("click", exportCSV);
+    document.getElementById("exportJsonBtn").addEventListener("click", exportJSON);
+    document.getElementById("importJsonInput").addEventListener("change", importJSON);
+    document.getElementById("loadSampleBtn").addEventListener("click", loadSampleData);
+    document.getElementById("printBtn").addEventListener("click", () => {
+      if (window.AndroidBridge && window.AndroidBridge.printPage) {
+        window.AndroidBridge.printPage();
+      } else {
+        window.print();
+      }
+    });
+    document.getElementById("clearAllBtn").addEventListener("click", () => {
+      if (!games.length) return;
+      if (confirm("Delete all recorded games? This cannot be undone unless you have a JSON backup.")) {
+        games = [];
+        saveGames();
+        resetForm();
+        clearAllFilters();
+      }
+    });
+
+    function clearAllFilters() {
+      searchInput.value = "";
+      filterCategory.value = "";
+      filterRole.value = "";
+      filterMechanics.value = "";
+      filterFeeStatus.value = "";
+      activePartnerFilter = "";
+      activeTeamFilter = "";
+      activeMonthFilter = "";
+      render();
+    }
+
+    function isPlaceholderName(name) {
+      return normalize(name) === "your name";
+    }
+
+    function hasPlaceholderInGames(list) {
+      return list.some(g =>
+        g.crew && (
+          isPlaceholderName(g.crew.cc) ||
+          isPlaceholderName(g.crew.u1) ||
+          isPlaceholderName(g.crew.u2)
+        )
+      );
+    }
+
+    function replacePlaceholderInGames(list, realName) {
+      let count = 0;
+      list.forEach(g => {
+        if (!g.crew) return;
+        let touched = false;
+        if (isPlaceholderName(g.crew.cc)) { g.crew.cc = realName; touched = true; }
+        if (isPlaceholderName(g.crew.u1)) { g.crew.u1 = realName; touched = true; }
+        if (isPlaceholderName(g.crew.u2)) { g.crew.u2 = realName; touched = true; }
+        if (touched) count++;
+      });
+      return count;
+    }
+
+    function parseFlexibleDate(d) {
+      const str = String(valOr(d, "")).trim();
+      if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
+      const match = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+      if (match) {
+        return `${match[3]}-${match[2].padStart(2, "0")}-${match[1].padStart(2, "0")}`;
+      }
+      return str;
+    }
+
+    function formatMonthLabel(ym) {
+      const parts = ym.split("-");
+      const y = parts[0];
+      const m = parts[1];
+      const idx = Number(m) - 1;
+      if (!y || idx < 0 || idx > 11) return ym;
+      return `${MONTH_NAMES[idx]} ${y}`;
+    }
+
+    function loadGames() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        const parsed = raw ? JSON.parse(raw) : [];
+        return Array.isArray(parsed) ? parsed.map(normalizeGameRecord) : [];
+      } catch (err) {
+        return [];
+      }
+    }
+
+    function normalizeGameRecord(g) {
+      const isRawSpreadsheet = g.Home !== undefined || g.Away !== undefined || g.CrewChief !== undefined;
+      if (isRawSpreadsheet) {
+        const rawNotes = String(valOr(g.Notes, "")).trim();
+        return {
+          id: g.id || generateId(),
+          date: parseFlexibleDate(g.Date),
+          time: "",
+          homeTeam: String(valOr(g.Home, "")).trim(),
+          awayTeam: String(valOr(g.Away, "")).trim(),
+          category: String(valOr(g.Category, "")).trim(),
+          venue: "",
+          homeScore: "",
+          awayScore: "",
+          fee: valOr(g.Revenue, ""),
+          paid: false,
+          notes: rawNotes.toLowerCase() === "none" ? "" : rawNotes,
+          crew: {
+            cc: String(valOr(g.CrewChief, "")).trim(),
+            u1: String(valOr(g.Umpire1, "")).trim() || "Your Name",
+            u2: String(valOr(g.Umpire2, "")).trim()
+          }
+        };
+      }
+
+      const crewObj = g.crew || {};
+      return {
+        id: g.id || generateId(),
+        date: parseFlexibleDate(g.date),
+        time: g.time || "",
+        homeTeam: g.homeTeam || "",
+        awayTeam: g.awayTeam || "",
+        category: g.category || "",
+        venue: g.venue || "",
+        homeScore: valOr(g.homeScore, ""),
+        awayScore: valOr(g.awayScore, ""),
+        fee: valOr(g.fee, ""),
+        paid: Boolean(g.paid),
+        notes: g.notes || "",
+        crew: {
+          cc: crewObj.cc || "",
+          u1: crewObj.u1 || "",
+          u2: crewObj.u2 || ""
+        }
+      };
+    }
+
+    function saveGames() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(games));
+    }
+
+    function generateId() {
+      return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+    }
+
+    function setDefaultDate() {
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, "0");
+      const dd = String(today.getDate()).padStart(2, "0");
+      dateInput.value = `${yyyy}-${mm}-${dd}`;
+    }
+
+    function getSeasonLabel(dateStr) {
+      if (!dateStr || dateStr.length < 7) return "";
+      const parts = dateStr.split("-");
+      const y = Number(parts[0]);
+      const m = Number(parts[1]);
+      if (!y || !m) return "";
+      const startYear = m >= 8 ? y : y - 1;
+      return `${startYear}-${String(startYear + 1).slice(-2)}`;
+    }
+
+    function getSeasonScopedGames() {
+      const selectedSeason = seasonFilter.value;
+      if (!selectedSeason) return games;
+      return games.filter(g => getSeasonLabel(g.date) === selectedSeason);
+    }
+
+    function resetForm() {
+      gameForm.reset();
+      gameIdInput.value = "";
+      setDefaultDate();
+      formTitle.textContent = "Log New Game";
+      submitBtn.textContent = "Save Game";
+      cancelEditBtn.classList.add("hidden");
+    }
+
+    function showExtrasIfNeeded(g) {
+      const hasExtras = Boolean(
+        g.time || g.venue || g.homeScore !== "" || g.awayScore !== "" || g.fee !== "" || g.paid || g.notes
+      );
+      if (hasExtras) {
+        extrasBox.classList.remove("hidden");
+        toggleExtrasBtn.textContent = "− Hide Optional Details";
+      }
+    }
+
+    function editGame(id) {
+      const g = games.find(item => item.id === id);
+      if (!g) return;
+      gameIdInput.value = g.id;
+      dateInput.value = g.date;
+      timeInput.value = g.time || "";
+      homeInput.value = g.homeTeam;
+      awayInput.value = g.awayTeam;
+      categoryInput.value = g.category;
+      ccInput.value = g.crew.cc;
+      u1Input.value = g.crew.u1;
+      u2Input.value = g.crew.u2 || "";
+      venueInput.value = g.venue || "";
+      homeScoreInput.value = valOr(g.homeScore, "");
+      awayScoreInput.value = valOr(g.awayScore, "");
+      feeInput.value = valOr(g.fee, "");
+      paidInput.checked = Boolean(g.paid);
+      notesInput.value = g.notes || "";
+
+      showExtrasIfNeeded(g);
+      formTitle.textContent = "Edit Game";
+      submitBtn.textContent = "Update Game";
+      cancelEditBtn.classList.remove("hidden");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function duplicateGame(id) {
+      const g = games.find(item => item.id === id);
+      if (!g) return;
+      gameIdInput.value = "";
+      dateInput.value = g.date;
+      timeInput.value = "";
+      homeInput.value = g.homeTeam;
+      awayInput.value = g.awayTeam;
+      categoryInput.value = g.category;
+      ccInput.value = g.crew.cc;
+      u1Input.value = g.crew.u1;
+      u2Input.value = g.crew.u2 || "";
+      venueInput.value = g.venue || "";
+      homeScoreInput.value = "";
+      awayScoreInput.value = "";
+      feeInput.value = valOr(g.fee, "");
+      paidInput.checked = false;
+      notesInput.value = "";
+
+      showExtrasIfNeeded(g);
+      formTitle.textContent = "Log New Game (Cloned)";
+      submitBtn.textContent = "Save Game";
+      cancelEditBtn.classList.remove("hidden");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function togglePaid(id) {
+      const g = games.find(item => item.id === id);
+      if (!g) return;
+      g.paid = !g.paid;
+      saveGames();
+      render();
+    }
+
+    function deleteGame(id) {
+      if (!confirm("Delete this game?")) return;
+      games = games.filter(g => g.id !== id);
+      saveGames();
+      if (gameIdInput.value === id) resetForm();
+      render();
+    }
+
+    function normalize(str) {
+      return String(valOr(str, "")).trim().toLowerCase();
+    }
+
+    function render() {
+      document.querySelectorAll("[data-role-fill]").forEach(btn => {
+        btn.classList.toggle("hidden", !myName);
+      });
+      fixPlaceholderBtn.classList.toggle("hidden", !hasPlaceholderInGames(games));
+      populateFiltersAndSuggestions();
+      renderTopStats();
+      renderAnalytics();
+      renderTable();
+    }
+
+    function populateFiltersAndSuggestions() {
+      const seasons = [...new Set(games.map(g => getSeasonLabel(g.date)).filter(Boolean))].sort().reverse();
+      const currentSeason = seasonFilter.value;
+      seasonFilter.innerHTML = `<option value="">All Time</option>` +
+        seasons.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join("");
+      if (seasons.includes(currentSeason)) seasonFilter.value = currentSeason;
+
+      const scoped = getSeasonScopedGames();
+
+      const categories = [...new Set(scoped.map(g => g.category).filter(Boolean))].sort();
+      const currentCat = filterCategory.value;
+      filterCategory.innerHTML = `<option value="">All Categories</option>` +
+        categories.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+      if (categories.includes(currentCat)) filterCategory.value = currentCat;
+
+      const allCats = [...new Set([...DEFAULT_CATEGORIES, ...games.map(g => g.category).filter(Boolean)])];
+      document.getElementById("categorySuggestions").innerHTML =
+        allCats.map(c => `<option value="${escapeHtml(c)}"></option>`).join("");
+
+      const teamPool = [];
+      games.forEach(g => {
+        if (g.homeTeam) teamPool.push(g.homeTeam);
+        if (g.awayTeam) teamPool.push(g.awayTeam);
+      });
+      const teams = [...new Set(teamPool)].sort();
+      document.getElementById("teamSuggestions").innerHTML =
+        teams.map(t => `<option value="${escapeHtml(t)}"></option>`).join("");
+
+      const refPool = [];
+      games.forEach(g => {
+        if (g.crew.cc) refPool.push(g.crew.cc);
+        if (g.crew.u1) refPool.push(g.crew.u1);
+        if (g.crew.u2) refPool.push(g.crew.u2);
+      });
+      if (myName) refPool.push(myName);
+      const refs = [...new Set(refPool.filter(r => r && !isPlaceholderName(r)))].sort();
+      document.getElementById("refSuggestions").innerHTML =
+        refs.map(r => `<option value="${escapeHtml(r)}"></option>`).join("");
+
+      const venues = [...new Set(games.map(g => g.venue).filter(Boolean))].sort();
+      document.getElementById("venueSuggestions").innerHTML =
+        venues.map(v => `<option value="${escapeHtml(v)}"></option>`).join("");
+    }
+
+    function renderTopStats() {
+      const scoped = getSeasonScopedGames();
+      const threePO = scoped.filter(g => Boolean((g.crew.u2 || "").trim())).length;
+      const twoPO = scoped.length - threePO;
+
+      statTotal.textContent = scoped.length;
+      const uniqueCats = new Set(scoped.map(g => normalize(g.category)).filter(Boolean));
+      statMechanics.textContent = `${threePO} × 3PO · ${twoPO} × 2PO · ${uniqueCats.size} cat.`;
+
+      let totalFees = 0;
+      let paidFees = 0;
+      let unpaidFees = 0;
+      let feeGames = 0;
+      scoped.forEach(g => {
+        if (g.fee !== "" && !isNaN(Number(g.fee))) {
+          const val = Number(g.fee);
+          feeGames++;
+          totalFees += val;
+          if (g.paid) paidFees += val;
+          else unpaidFees += val;
+        }
+      });
+      statFees.textContent = feeGames ? formatNum(totalFees) : "—";
+      statFeesSub.textContent = feeGames
+        ? `${formatNum(paidFees)} paid · ${formatNum(unpaidFees)} unpaid`
+        : "Optional fee tracking";
+
+      const me = normalize(myName);
+      if (!me) {
+        statCC.textContent = "—";
+        statU1.textContent = "—";
+        statU2.textContent = "—";
+        statCCSub.textContent = 'Enter "My Name" above';
+        statU1Sub.textContent = 'Enter "My Name" above';
+        statU2Sub.textContent = "3-person mechanics";
+        return;
+      }
+
+      let ccCount = 0, u1Count = 0, u2Count = 0;
+      scoped.forEach(g => {
+        if (normalize(g.crew.cc) === me) ccCount++;
+        if (normalize(g.crew.u1) === me) u1Count++;
+        if (normalize(g.crew.u2) === me) u2Count++;
+      });
+
+      const myTotal = ccCount + u1Count + u2Count;
+      statCC.textContent = ccCount;
+      statU1.textContent = u1Count;
+      statU2.textContent = u2Count;
+      statCCSub.textContent = myTotal ? `${Math.round((ccCount / myTotal) * 100)}% of your games` : "No matches yet";
+      statU1Sub.textContent = myTotal ? `${Math.round((u1Count / myTotal) * 100)}% of your games` : "No matches yet";
+      statU2Sub.textContent = myTotal ? `${Math.round((u2Count / myTotal) * 100)}% of your games` : "3-person mechanics";
+    }
+
+    function renderAnalytics() {
+      const scoped = getSeasonScopedGames();
+      if (!scoped.length) {
+        analyticsSection.classList.add("hidden");
+        return;
+      }
+      analyticsSection.classList.remove("hidden");
+
+      renderSmartInsights(scoped);
+      renderMonthlyChart(scoped);
+      renderRoleDonut(scoped);
+      renderCategoryDonut(scoped);
+      renderWeekdayChart(scoped);
+      renderPartnersChart(scoped);
+      renderTeamsChart(scoped);
+    }
+
+    function renderSmartInsights(scoped) {
+      const me = normalize(myName);
+      const pills = [];
+
+      const partnerCounts = {};
+      scoped.forEach(g => {
+        [g.crew.cc, g.crew.u1, g.crew.u2].forEach(name => {
+          const t = (name || "").trim();
+          if (t && (!me || normalize(t) !== me) && !isPlaceholderName(t)) {
+            partnerCounts[t] = (partnerCounts[t] || 0) + 1;
+          }
+        });
+      });
+      const topPartner = Object.entries(partnerCounts).sort((a, b) => b[1] - a[1])[0];
+      if (topPartner) {
+        const pct = Math.round((topPartner[1] / scoped.length) * 100);
+        pills.push({
+          icon: "🤝",
+          kicker: "Top Crewmate",
+          main: topPartner[0],
+          detail: `${topPartner[1]} games together (${pct}%)`,
+          attr: `data-filter-partner="${escapeHtml(topPartner[0])}"`
+        });
+      }
+
+      const teamStats = {};
+      scoped.forEach(g => {
+        if (g.homeTeam) {
+          teamStats[g.homeTeam] = teamStats[g.homeTeam] || { home: 0, away: 0 };
+          teamStats[g.homeTeam].home++;
+        }
+        if (g.awayTeam) {
+          teamStats[g.awayTeam] = teamStats[g.awayTeam] || { home: 0, away: 0 };
+          teamStats[g.awayTeam].away++;
+        }
+      });
+      const topTeam = Object.entries(teamStats)
+        .sort((a, b) => (b[1].home + b[1].away) - (a[1].home + a[1].away))[0];
+      if (topTeam) {
+        const total = topTeam[1].home + topTeam[1].away;
+        pills.push({
+          icon: "🏟️",
+          kicker: "Most Officiated Team",
+          main: topTeam[0],
+          detail: `${total} games (${topTeam[1].home} Home · ${topTeam[1].away} Away)`,
+          attr: `data-filter-team="${escapeHtml(topTeam[0])}"`
+        });
+      }
+
+      const monthMap = {};
+      scoped.forEach(g => {
+        const ym = (g.date || "").slice(0, 7);
+        if (!ym) return;
+        monthMap[ym] = monthMap[ym] || { count: 0, rev: 0 };
+        monthMap[ym].count++;
+        if (g.fee !== "" && !isNaN(Number(g.fee))) monthMap[ym].rev += Number(g.fee);
+      });
+      const topMonth = Object.entries(monthMap).sort((a, b) => b[1].count - a[1].count)[0];
+      if (topMonth) {
+        pills.push({
+          icon: "📅",
+          kicker: "Busiest Month",
+          main: formatMonthLabel(topMonth[0]),
+          detail: `${topMonth[1].count} games${topMonth[1].rev ? ` · ${formatNum(topMonth[1].rev)} rev.` : ""}`,
+          attr: `data-filter-month="${escapeHtml(topMonth[0])}"`
+        });
+      }
+
+      const feeGames = scoped.filter(g => g.fee !== "" && !isNaN(Number(g.fee)));
+      if (feeGames.length) {
+        const totalRev = feeGames.reduce((acc, g) => acc + Number(g.fee), 0);
+        const unpaid = feeGames.filter(g => !g.paid);
+        const unpaidSum = unpaid.reduce((acc, g) => acc + Number(g.fee), 0);
+        const avg = Math.round(totalRev / feeGames.length);
+        pills.push({
+          icon: unpaidSum > 0 ? "💰" : "✅",
+          kicker: unpaidSum > 0 ? "Pending Fees" : "Fee Average",
+          main: unpaidSum > 0 ? `${formatNum(unpaidSum)} unpaid` : `${formatNum(avg)} / game`,
+          detail: unpaidSum > 0
+            ? `${unpaid.length} unpaid · Avg ${formatNum(avg)} / game`
+            : `All ${feeGames.length} games paid`,
+          attr: unpaidSum > 0 ? `data-filter-unpaid="1"` : ""
+        });
+      } else {
+        const catCounts = {};
+        scoped.forEach(g => {
+          if (g.category) catCounts[g.category] = (catCounts[g.category] || 0) + 1;
+        });
+        const topCat = Object.entries(catCounts).sort((a, b) => b[1] - a[1])[0];
+        if (topCat) {
+          pills.push({
+            icon: "🏆",
+            kicker: "Top Category",
+            main: topCat[0],
+            detail: `${topCat[1]} games (${Math.round((topCat[1] / scoped.length) * 100)}%)`,
+            attr: `data-filter-cat="${escapeHtml(topCat[0])}"`
+          });
+        }
+      }
+
+      document.getElementById("insightsStrip").innerHTML = pills.map(p => `
+        <div class="insight-pill ${p.attr ? "clickable" : ""}" ${p.attr}>
+          <div class="insight-icon">${p.icon}</div>
+          <div>
+            <div class="insight-kicker">${p.kicker}</div>
+            <div class="insight-main">${escapeHtml(p.main)}</div>
+            <div class="insight-detail">${escapeHtml(p.detail)}</div>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function renderMonthlyChart(scoped) {
+      const wrap = document.getElementById("monthlyChartWrap");
+      const legendEl = document.getElementById("monthlyLegend");
+      const me = normalize(myName);
+
+      const monthMap = {};
+      scoped.forEach(g => {
+        const ym = (g.date || "").slice(0, 7);
+        if (!/^\d{4}-\d{2}$/.test(ym)) return;
+        if (!monthMap[ym]) {
+          monthMap[ym] = { cc: 0, u1: 0, u2: 0, other: 0, paidRev: 0, unpaidRev: 0, total: 0 };
+        }
+        const m = monthMap[ym];
+        m.total++;
+        if (me) {
+          if (normalize(g.crew.cc) === me) m.cc++;
+          else if (normalize(g.crew.u1) === me) m.u1++;
+          else if (normalize(g.crew.u2) === me) m.u2++;
+          else m.other++;
+        } else {
+          m.other++;
+        }
+        if (g.fee !== "" && !isNaN(Number(g.fee))) {
+          const f = Number(g.fee);
+          if (g.paid) m.paidRev += f;
+          else m.unpaidRev += f;
+        }
+      });
+
+      const months = Object.keys(monthMap).sort();
+      if (!months.length) {
+        wrap.innerHTML = `<div class="sub-meta">No valid dates to chart.</div>`;
+        legendEl.innerHTML = "";
+        return;
+      }
+
+      const isRev = monthlyChartMode === "revenue";
+      const maxVal = Math.max(
+        1,
+        ...months.map(ym => isRev ? (monthMap[ym].paidRev + monthMap[ym].unpaidRev) : monthMap[ym].total)
+      );
+
+      const W = 560;
+      const H = 210;
+      const padL = 46;
+      const padR = 16;
+      const padT = 16;
+      const padB = 34;
+      const plotW = W - padL - padR;
+      const plotH = H - padT - padB;
+      const slotW = plotW / months.length;
+      const barW = Math.min(54, Math.max(18, slotW * 0.56));
+
+      let gridHtml = "";
+      [0, 0.5, 1].forEach(frac => {
+        const y = padT + plotH * (1 - frac);
+        const val = Math.round(maxVal * frac);
+        gridHtml += `
+          <line x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}" stroke="#e2e8f0" stroke-dasharray="${frac === 0 ? "" : "3 3"}" />
+          <text x="${padL - 8}" y="${y + 4}" text-anchor="end" font-size="10.5" fill="#64748b">${formatCompact(val)}</text>
+        `;
+      });
+
+      let barsHtml = "";
+      months.forEach((ym, i) => {
+        const d = monthMap[ym];
+        const x = padL + slotW * i + (slotW - barW) / 2;
+        const isActive = activeMonthFilter === ym;
+        const label = formatMonthLabel(ym);
+
+        const segs = isRev
+          ? [
+              { val: d.paidRev, color: "#16a34a" },
+              { val: d.unpaidRev, color: "#f59e0b" }
+            ]
+          : (me
+              ? [
+                  { val: d.cc, color: "#3b82f6" },
+                  { val: d.u1, color: "#22c55e" },
+                  { val: d.u2, color: "#a855f7" },
+                  { val: d.other, color: "#94a3b8" }
+                ]
+              : [{ val: d.total, color: "#ea580c" }]);
+
+        const totalBarVal = segs.reduce((s, item) => s + item.val, 0);
+        let currentBottom = padT + plotH;
+
+        const tipLines = isRev
+          ? `<strong>${label}</strong><br>Total: ${formatNum(totalBarVal)}<br>Paid: ${formatNum(d.paidRev)} · Unpaid: ${formatNum(d.unpaidRev)}<br>Games: ${d.total}`
+          : `<strong>${label}</strong><br>Total Games: ${d.total}` +
+            (me ? `<br>CC: ${d.cc} · U1: ${d.u1} · U2: ${d.u2}` : "") +
+            ((d.paidRev + d.unpaidRev) > 0 ? `<br>Revenue: ${formatNum(d.paidRev + d.unpaidRev)}` : "");
+
+        let stackRects = "";
+        segs.forEach(s => {
+          if (s.val <= 0) return;
+          const h = (s.val / maxVal) * plotH;
+          const y = currentBottom - h;
+          stackRects += `<rect x="${x}" y="${y}" width="${barW}" height="${h}" fill="${s.color}" rx="2" />`;
+          currentBottom = y;
+        });
+
+        const topY = currentBottom;
+        barsHtml += `
+          <g class="chart-bar-interactive" data-filter-month="${ym}" data-tip="${escapeHtml(tipLines)}">
+            ${isActive ? `<rect x="${x - 4}" y="${padT - 2}" width="${barW + 8}" height="${plotH + 4}" fill="rgba(234,88,12,0.12)" stroke="#ea580c" stroke-width="1.5" rx="5" />` : ""}
+            ${stackRects}
+            <text x="${x + barW / 2}" y="${Math.max(padT + 10, topY - 5)}" text-anchor="middle" font-size="10.5" font-weight="700" fill="#0f172a">
+              ${isRev ? formatCompact(totalBarVal) : d.total}
+            </text>
+            <text x="${x + barW / 2}" y="${padT + plotH + 17}" text-anchor="middle" font-size="11" font-weight="${isActive ? "800" : "600"}" fill="${isActive ? "#ea580c" : "#475569"}">
+              ${escapeHtml(label)}
+            </text>
+          </g>
+        `;
+      });
+
+      wrap.innerHTML = `<svg viewBox="0 0 ${W} ${H}" class="svg-chart" role="img" aria-label="Monthly chart">${gridHtml}${barsHtml}</svg>`;
+
+      if (isRev) {
+        legendEl.innerHTML = `
+          <span><span class="legend-dot" style="background:#16a34a"></span>Paid</span>
+          <span><span class="legend-dot" style="background:#f59e0b"></span>Unpaid</span>
+        `;
+      } else if (me) {
+        legendEl.innerHTML = `
+          <span><span class="legend-dot" style="background:var(--cc)"></span>Crew Chief (CC)</span>
+          <span><span class="legend-dot" style="background:var(--u1)"></span>Umpire 1 (U1)</span>
+          <span><span class="legend-dot" style="background:var(--u2)"></span>Umpire 2 (U2)</span>
+        `;
+      } else {
+        legendEl.innerHTML = `<span><span class="legend-dot" style="background:var(--accent)"></span>Games Logged (set "My Name" to split by role)</span>`;
+      }
+    }
+
+    function buildDonutSvg(slices, centerNum, centerLabel) {
+      const total = slices.reduce((s, x) => s + x.value, 0);
+      const r = 52;
+      const circ = 2 * Math.PI * r;
+      let offset = 0;
+
+      const circles = total > 0
+        ? slices.map(s => {
+            if (s.value <= 0) return "";
+            const len = (s.value / total) * circ;
+            const tip = `<strong>${escapeHtml(s.label)}</strong><br>${s.value} (${Math.round((s.value / total) * 100)}%)${s.extra ? `<br>${escapeHtml(s.extra)}` : ""}`;
+            const c = `
+              <circle cx="70" cy="70" r="${r}" fill="transparent"
+                stroke="${s.color}" stroke-width="20"
+                stroke-dasharray="${len} ${circ - len}"
+                stroke-dashoffset="${-offset}"
+                class="${s.attr ? "chart-bar-interactive" : ""}"
+                ${s.attr || ""}
+                data-tip="${escapeHtml(tip)}" />
+            `;
+            offset += len;
+            return c;
+          }).join("")
+        : `<circle cx="70" cy="70" r="${r}" fill="transparent" stroke="#e2e8f0" stroke-width="20" />`;
+
+      return `
+        <div class="donut-wrap">
+          <svg viewBox="0 0 140 140" width="140" height="140" style="transform:rotate(-90deg)">
+            ${circles}
+          </svg>
+          <div class="donut-center">
+            <strong>${escapeHtml(centerNum)}</strong>
+            <span>${escapeHtml(centerLabel)}</span>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderRoleDonut(scoped) {
+      const container = document.getElementById("roleDonutContainer");
+      const title = document.getElementById("roleDonutTitle");
+      const me = normalize(myName);
+
+      if (!me) {
+        title.textContent = "Mechanics Split (2PO vs 3PO)";
+        const threePO = scoped.filter(g => Boolean((g.crew.u2 || "").trim())).length;
+        const twoPO = scoped.length - threePO;
+        const slices = [
+          { label: "3-Person (3PO)", value: threePO, color: "#9333ea", attr: "" },
+          { label: "2-Person (2PO)", value: twoPO, color: "#0284c7", attr: "" }
+        ];
+        container.innerHTML = `
+          <div class="donut-layout">
+            ${buildDonutSvg(slices, scoped.length, "Games")}
+            <div class="donut-legend">
+              ${slices.map(s => `
+                <div class="legend-row">
+                  <span class="legend-left"><span class="legend-dot" style="background:${s.color}"></span>${s.label}</span>
+                  <span class="legend-right">${s.value} (${scoped.length ? Math.round((s.value / scoped.length) * 100) : 0}%)</span>
+                </div>
+              `).join("")}
+              <div class="sub-meta">Enter "My Name" above to see CC / U1 / U2 split.</div>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      title.textContent = "My Role Split";
+      let cc = 0, u1 = 0, u2 = 0;
+      scoped.forEach(g => {
+        if (normalize(g.crew.cc) === me) cc++;
+        else if (normalize(g.crew.u1) === me) u1++;
+        else if (normalize(g.crew.u2) === me) u2++;
+      });
+      const myTotal = cc + u1 + u2;
+      const slices = [
+        { label: "Crew Chief (CC)", value: cc, color: "#3b82f6", role: "CC", attr: `data-filter-role="CC"` },
+        { label: "Umpire 1 (U1)", value: u1, color: "#22c55e", role: "U1", attr: `data-filter-role="U1"` },
+        { label: "Umpire 2 (U2)", value: u2, color: "#a855f7", role: "U2", attr: `data-filter-role="U2"` }
+      ];
+
+      container.innerHTML = `
+        <div class="donut-layout">
+          ${buildDonutSvg(slices, myTotal, "My Games")}
+          <div class="donut-legend">
+            ${slices.map(s => `
+              <div class="legend-row ${filterRole.value === s.role ? "active" : ""}" data-filter-role="${s.role}">
+                <span class="legend-left"><span class="legend-dot" style="background:${s.color}"></span>${s.label}</span>
+                <span class="legend-right">${s.value} (${myTotal ? Math.round((s.value / myTotal) * 100) : 0}%)</span>
+              </div>
+            `).join("")}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderCategoryDonut(scoped) {
+      const container = document.getElementById("categoryDonutContainer");
+      const map = {};
+      scoped.forEach(g => {
+        const c = g.category || "Uncategorized";
+        if (!map[c]) map[c] = { count: 0, rev: 0 };
+        map[c].count++;
+        if (g.fee !== "" && !isNaN(Number(g.fee))) map[c].rev += Number(g.fee);
+      });
+
+      const entries = Object.entries(map).sort((a, b) => b[1].count - a[1].count);
+      const slices = entries.map((entry, idx) => {
+        const cat = entry[0];
+        const info = entry[1];
+        return {
+          label: cat,
+          value: info.count,
+          rev: info.rev,
+          extra: info.rev ? `Revenue: ${formatNum(info.rev)}` : "",
+          color: CAT_PALETTE[idx % CAT_PALETTE.length],
+          attr: `data-filter-cat="${escapeHtml(cat)}"`
+        };
+      });
+
+      container.innerHTML = `
+        <div class="donut-layout">
+          ${buildDonutSvg(slices, entries.length, "Categories")}
+          <div class="donut-legend">
+            ${slices.map(s => `
+              <div class="legend-row ${filterCategory.value === s.label ? "active" : ""}" data-filter-cat="${escapeHtml(s.label)}">
+                <span class="legend-left"><span class="legend-dot" style="background:${s.color}"></span>${escapeHtml(s.label)}</span>
+                <span class="legend-right">${s.value} (${Math.round((s.value / scoped.length) * 100)}%)${s.rev ? ` · ${formatNum(s.rev)}` : ""}</span>
+              </div>
+            `).join("")}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderWeekdayChart(scoped) {
+      const container = document.getElementById("weekdayChartContainer");
+      const counts = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
+
+      scoped.forEach(g => {
+        if (!g.date) return;
+        const dt = new Date(`${g.date}T12:00:00`);
+        if (!isNaN(dt.getTime())) counts[dt.getDay()]++;
+      });
+
+      const max = Math.max(1, ...Object.values(counts));
+      container.innerHTML = `
+        <div class="weekday-grid">
+          ${WEEKDAY_ORDER.map(day => {
+            const c = counts[day.idx];
+            const pct = Math.round((c / max) * 100);
+            const isPeak = c > 0 && c === max;
+            return `
+              <div class="weekday-col" data-tip="<strong>${day.label}</strong><br>${c} ${c === 1 ? "game" : "games"}">
+                <div class="weekday-count">${c || ""}</div>
+                <div class="weekday-bar-wrap">
+                  <div class="weekday-bar ${c === 0 ? "zero" : (isPeak ? "peak" : "")}" style="height:${c ? Math.max(10, pct) : 4}%"></div>
+                </div>
+                <div class="weekday-label">${day.label}</div>
+              </div>
+            `;
+          }).join("")}
+        </div>
+      `;
+    }
+
+    function renderPartnersChart(scoped) {
+      const container = document.getElementById("partnersChartContainer");
+      const me = normalize(myName);
+      const map = {};
+
+      scoped.forEach(g => {
+        const roles = [
+          { role: "cc", name: (g.crew.cc || "").trim() },
+          { role: "u1", name: (g.crew.u1 || "").trim() },
+          { role: "u2", name: (g.crew.u2 || "").trim() }
+        ];
+        roles.forEach(r => {
+          if (!r.name || isPlaceholderName(r.name)) return;
+          if (me && normalize(r.name) === me) return;
+          if (!map[r.name]) map[r.name] = { cc: 0, u1: 0, u2: 0, total: 0 };
+          map[r.name][r.role]++;
+          map[r.name].total++;
+        });
+      });
+
+      const top = Object.entries(map).sort((a, b) => b[1].total - a[1].total).slice(0, 7);
+      if (!top.length) {
+        container.innerHTML = `<div class="sub-meta">No crewmates found yet.</div>`;
+        return;
+      }
+      const max = top[0][1].total;
+
+      container.innerHTML = top.map(entry => {
+        const name = entry[0];
+        const d = entry[1];
+        const ccW = (d.cc / max) * 100;
+        const u1W = (d.u1 / max) * 100;
+        const u2W = (d.u2 / max) * 100;
+        const active = activePartnerFilter === name ? "active" : "";
+        const tip = `<strong>${escapeHtml(name)}</strong><br>${d.total} games together<br>as CC: ${d.cc} · as U1: ${d.u1} · as U2: ${d.u2}`;
+        return `
+          <div class="hbar-item ${active}" data-filter-partner="${escapeHtml(name)}" data-tip="${escapeHtml(tip)}">
+            <div class="hbar-top">
+              <span class="hbar-name">${escapeHtml(name)}</span>
+              <span class="hbar-val">${d.total} ${d.total === 1 ? "game" : "games"} (${d.cc} CC · ${d.u1} U1 · ${d.u2} U2)</span>
+            </div>
+            <div class="hbar-track">
+              <div class="hbar-seg" style="width:${ccW}%;background:var(--cc)"></div>
+              <div class="hbar-seg" style="width:${u1W}%;background:var(--u1)"></div>
+              <div class="hbar-seg" style="width:${u2W}%;background:var(--u2)"></div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderTeamsChart(scoped) {
+      const container = document.getElementById("teamsChartContainer");
+      const map = {};
+
+      scoped.forEach(g => {
+        if (g.homeTeam) {
+          map[g.homeTeam] = map[g.homeTeam] || { home: 0, away: 0, total: 0 };
+          map[g.homeTeam].home++;
+          map[g.homeTeam].total++;
+        }
+        if (g.awayTeam) {
+          map[g.awayTeam] = map[g.awayTeam] || { home: 0, away: 0, total: 0 };
+          map[g.awayTeam].away++;
+          map[g.awayTeam].total++;
+        }
+      });
+
+      const top = Object.entries(map).sort((a, b) => b[1].total - a[1].total).slice(0, 7);
+      if (!top.length) {
+        container.innerHTML = `<div class="sub-meta">No teams logged yet.</div>`;
+        return;
+      }
+      const max = top[0][1].total;
+
+      container.innerHTML = top.map(entry => {
+        const team = entry[0];
+        const d = entry[1];
+        const hW = (d.home / max) * 100;
+        const aW = (d.away / max) * 100;
+        const active = activeTeamFilter === team ? "active" : "";
+        const tip = `<strong>${escapeHtml(team)}</strong><br>${d.total} games officiated<br>Home: ${d.home} · Away: ${d.away}`;
+        return `
+          <div class="hbar-item ${active}" data-filter-team="${escapeHtml(team)}" data-tip="${escapeHtml(tip)}">
+            <div class="hbar-top">
+              <span class="hbar-name">${escapeHtml(team)}</span>
+              <span class="hbar-val">${d.total} (${d.home}H · ${d.away}A)</span>
+            </div>
+            <div class="hbar-track">
+              <div class="hbar-seg" style="width:${hW}%;background:var(--accent)"></div>
+              <div class="hbar-seg" style="width:${aW}%;background:var(--away)"></div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderTable() {
+      const scoped = getSeasonScopedGames();
+      const q = normalize(searchInput.value);
+      const cat = filterCategory.value;
+      const role = filterRole.value;
+      const mech = filterMechanics.value;
+      const feeStatus = filterFeeStatus.value;
+      const me = normalize(myName);
+
+      const hasFilters = Boolean(
+        q || cat || role || mech || feeStatus ||
+        activePartnerFilter || activeTeamFilter || activeMonthFilter
+      );
+      resetFiltersBtn.classList.toggle("hidden", !hasFilters);
+
+      const pills = [];
+      if (activeMonthFilter) pills.push({ type: "month", label: `Month: ${formatMonthLabel(activeMonthFilter)}` });
+      if (activePartnerFilter) pills.push({ type: "partner", label: `Crewmate: ${activePartnerFilter}` });
+      if (activeTeamFilter) pills.push({ type: "team", label: `Team: ${activeTeamFilter}` });
+      if (cat) pills.push({ type: "category", label: `Category: ${cat}` });
+      if (role) pills.push({ type: "role", label: `Role: ${role}` });
+      if (feeStatus) pills.push({ type: "fee", label: `Fee: ${feeStatus}` });
+
+      activeFilterPills.classList.toggle("hidden", !pills.length);
+      activeFilterPills.innerHTML = pills.map(p =>
+        `<button type="button" class="active-filter-pill" data-clear-filter="${p.type}">${escapeHtml(p.label)} ×</button>`
+      ).join("");
+
+      const filtered = scoped
+        .filter(g => {
+          if (cat && g.category !== cat) return false;
+          if (activeMonthFilter && (g.date || "").slice(0, 7) !== activeMonthFilter) return false;
+          if (role && me) {
+            if (role === "CC" && normalize(g.crew.cc) !== me) return false;
+            if (role === "U1" && normalize(g.crew.u1) !== me) return false;
+            if (role === "U2" && normalize(g.crew.u2) !== me) return false;
+          }
+          const is3PO = Boolean((g.crew.u2 || "").trim());
+          if (mech === "3PO" && !is3PO) return false;
+          if (mech === "2PO" && is3PO) return false;
+          if (feeStatus === "paid" && (g.fee === "" || !g.paid)) return false;
+          if (feeStatus === "unpaid" && (g.fee === "" || g.paid)) return false;
+          if (activePartnerFilter) {
+            const crewNames = [g.crew.cc, g.crew.u1, g.crew.u2].map(normalize);
+            if (!crewNames.includes(normalize(activePartnerFilter))) return false;
+          }
+          if (activeTeamFilter) {
+            const tNorm = normalize(activeTeamFilter);
+            if (normalize(g.homeTeam) !== tNorm && normalize(g.awayTeam) !== tNorm) return false;
+          }
+          if (q) {
+            const haystack = [
+              g.date, g.homeTeam, g.awayTeam, g.category, g.venue, g.notes,
+              g.crew.cc, g.crew.u1, g.crew.u2
+            ].join(" ").toLowerCase();
+            if (!haystack.includes(q)) return false;
+          }
+          return true;
+        })
+        .sort((a, b) => {
+          const dateCmp = (b.date || "").localeCompare(a.date || "");
+          if (dateCmp !== 0) return dateCmp;
+          return (b.time || "").localeCompare(a.time || "");
+        });
+
+      const filteredRev = filtered.reduce((acc, g) => acc + (g.fee !== "" && !isNaN(Number(g.fee)) ? Number(g.fee) : 0), 0);
+      resultCount.textContent = `${filtered.length} ${filtered.length === 1 ? "game" : "games"} shown` +
+        (filteredRev > 0 ? ` · ${formatNum(filteredRev)} revenue` : "");
+
+      if (!filtered.length) {
+        gamesTableBody.innerHTML = `
+          <tr>
+            <td colspan="6" class="empty-state">
+              ${scoped.length ? "No games match your current filters." : "No games logged yet. Add your first game above or click Load Sample."}
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      gamesTableBody.innerHTML = filtered.map(g => {
+        const is3PO = Boolean((g.crew.u2 || "").trim());
+        const crewHtml = [
+          renderCrewPill("CC", g.crew.cc, "crew-cc", me),
+          renderCrewPill("U1", g.crew.u1, "crew-u1", me),
+          is3PO ? renderCrewPill("U2", g.crew.u2, "crew-u2", me) : ""
+        ].filter(Boolean).join("");
+
+        const hasScore = g.homeScore !== "" && g.awayScore !== "";
+        const scoreHtml = hasScore
+          ? `<div class="sub-meta">Final: <strong>${escapeHtml(g.homeScore)} - ${escapeHtml(g.awayScore)}</strong></div>`
+          : "";
+
+        const detailParts = [];
+        if (g.venue) detailParts.push(`📍 ${escapeHtml(g.venue)}`);
+        if (g.fee !== "" && !isNaN(Number(g.fee))) {
+          const badgeCls = g.paid ? "badge-paid" : "badge-unpaid";
+          const statusLabel = g.paid ? "Paid" : "Unpaid";
+          detailParts.push(
+            `<button type="button" class="badge ${badgeCls}" style="cursor:pointer" data-action="toggle-paid" data-id="${escapeHtml(g.id)}" title="Click to toggle paid status">${formatNum(Number(g.fee))} · ${statusLabel}</button>`
+          );
+        }
+        if (g.notes) detailParts.push(`<div class="sub-meta" title="${escapeHtml(g.notes)}">📝 ${escapeHtml(truncate(g.notes, 45))}</div>`);
+
+        return `
+          <tr>
+            <td>
+              <strong>${escapeHtml(g.date)}</strong>
+              ${g.time ? `<div class="sub-meta">${escapeHtml(g.time)}</div>` : ""}
+            </td>
+            <td class="teams-cell">
+              ${escapeHtml(g.homeTeam)} <span class="vs-muted">vs</span> ${escapeHtml(g.awayTeam)}
+              ${scoreHtml}
+            </td>
+            <td>
+              <span class="badge badge-cat">${escapeHtml(g.category)}</span>
+              <span class="badge badge-mech">${is3PO ? "3PO" : "2PO"}</span>
+            </td>
+            <td><div class="crew-list">${crewHtml}</div></td>
+            <td>${detailParts.length ? detailParts.join(" ") : `<span class="sub-meta">—</span>`}</td>
+            <td>
+              <div class="row-actions">
+                <button type="button" class="btn-secondary btn-sm" data-action="edit" data-id="${escapeHtml(g.id)}">Edit</button>
+                <button type="button" class="btn-secondary btn-sm" data-action="duplicate" data-id="${escapeHtml(g.id)}">Clone</button>
+                <button type="button" class="btn-danger btn-sm" data-action="delete" data-id="${escapeHtml(g.id)}">Del</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function renderCrewPill(role, name, cls, meNormalized) {
+      if (!name) return "";
+      const isMe = meNormalized && normalize(name) === meNormalized;
+      return `
+        <span class="crew-pill ${cls} ${isMe ? "crew-me" : ""}">
+          <span class="role-tag">${role}</span>
+          <span>${escapeHtml(name)}</span>
+        </span>
+      `;
+    }
+
+    function formatNum(n) {
+      return Number.isInteger(n) ? n.toLocaleString() : n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function formatCompact(n) {
+      if (n >= 10000) return `${(n / 1000).toFixed(1).replace(/\.0$/, "")}k`;
+      return String(n);
+    }
+
+    function truncate(str, max) {
+      return str.length > max ? str.slice(0, max - 1) + "…" : str;
+    }
+
+    function escapeHtml(str) {
+      return String(valOr(str, ""))
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function exportCSV() {
+      if (!games.length) {
+        alert("No games to export.");
+        return;
+      }
+      const headers = [
+        "Date", "Time", "Home Team", "Away Team", "Home Score", "Away Score",
+        "Category", "Mechanics", "CC", "U1", "U2", "Venue", "Fee", "Paid", "Notes"
+      ];
+      const rows = [...games]
+        .sort((a, b) => (b.date || "").localeCompare(a.date || ""))
+        .map(g => [
+          g.date,
+          g.time || "",
+          g.homeTeam,
+          g.awayTeam,
+          valOr(g.homeScore, ""),
+          valOr(g.awayScore, ""),
+          g.category,
+          (g.crew.u2 || "").trim() ? "3PO" : "2PO",
+          g.crew.cc,
+          g.crew.u1,
+          g.crew.u2 || "",
+          g.venue || "",
+          valOr(g.fee, ""),
+          g.fee !== "" ? (g.paid ? "Yes" : "No") : "",
+          g.notes || ""
+        ]);
+
+      const csv = [headers, ...rows]
+        .map(row => row.map(cell => `"${String(valOr(cell, "")).replace(/"/g, '""')}"`).join(","))
+        .join("\n");
+
+      downloadFile(csv, `basketball-ref-games-${new Date().toISOString().slice(0, 10)}.csv`, "text/csv;charset=utf-8;");
+    }
+
+    function exportJSON() {
+      const payload = JSON.stringify({ myName, games }, null, 2);
+      downloadFile(payload, `courtlog-backup-${new Date().toISOString().slice(0, 10)}.json`, "application/json");
+    }
+
+    function importJSON(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const parsed = JSON.parse(reader.result);
+          const importedRaw = Array.isArray(parsed) ? parsed : parsed.games;
+          if (!Array.isArray(importedRaw)) throw new Error("Invalid format");
+
+          const importedGames = importedRaw.map(normalizeGameRecord);
+
+          let resolvedName = myName && !isPlaceholderName(myName) ? myName : "";
+          if (!resolvedName && parsed.myName && !isPlaceholderName(parsed.myName)) {
+            resolvedName = parsed.myName.trim();
+          }
+
+          if (hasPlaceholderInGames(importedGames)) {
+            if (!resolvedName) {
+              const asked = prompt('Enter your referee name to fill in "Your Name" for these imported games:', "");
+              if (asked && asked.trim()) resolvedName = asked.trim();
+            }
+            if (resolvedName) {
+              replacePlaceholderInGames(importedGames, resolvedName);
+            }
+          }
+
+          if (resolvedName && !myName) {
+            myName = resolvedName;
+            myNameInput.value = myName;
+            localStorage.setItem(PROFILE_KEY, myName);
+          }
+
+          if (games.length > 0) {
+            const shouldMerge = confirm(
+              `You currently have ${games.length} games.\n\nClick OK to MERGE the ${importedGames.length} imported games with your existing games.\nClick Cancel to REPLACE all existing games.`
+            );
+            if (shouldMerge) {
+              const existingIds = new Set(games.map(g => g.id));
+              const newOnes = importedGames.filter(g => !existingIds.has(g.id));
+              games = [...games, ...newOnes];
+              alert(`Merged ${newOnes.length} new games (${importedGames.length - newOnes.length} duplicates skipped).`);
+            } else {
+              games = importedGames;
+              alert(`Replaced log with ${games.length} imported games.`);
+            }
+          } else {
+            games = importedGames;
+            alert(`Imported ${games.length} games.`);
+          }
+
+          saveGames();
+          render();
+        } catch (err) {
+          alert("Could not import file. Make sure it is a valid JSON game list or CourtLog backup.");
+        }
+        e.target.value = "";
+      };
+      reader.readAsText(file);
+    }
+
+    function downloadFile(content, filename, mime) {
+      if (window.AndroidBridge && window.AndroidBridge.saveFile) {
+        window.AndroidBridge.saveFile(content, filename, mime);
+        return;
+      }
+      const blob = new Blob([content], { type: mime });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function loadSampleData() {
+      const sampleName = myName || "Shadi AlSaleem";
+      if (!myName) {
+        myName = sampleName;
+        myNameInput.value = sampleName;
+        localStorage.setItem(PROFILE_KEY, sampleName);
+      }
+
+      const samples = [
+        normalizeGameRecord({
+          id: generateId(),
+          date: "2026-10-06",
+          homeTeam: "AlFayhaa",
+          awayTeam: "AlNawair",
+          category: "Men U18 D1",
+          fee: 3587,
+          paid: true,
+          crew: { cc: "Khalil AlAbtah", u1: sampleName, u2: "Salah Dannan" }
+        }),
+        normalizeGameRecord({
+          id: generateId(),
+          date: "2026-10-10",
+          homeTeam: "AlSahel",
+          awayTeam: "Sheen",
+          category: "Women U16 D1",
+          fee: 4875,
+          paid: true,
+          crew: { cc: "Khalil AlAbtah", u1: sampleName, u2: "Tarek Yaseen" }
+        }),
+        normalizeGameRecord({
+          id: generateId(),
+          date: "2026-11-21",
+          homeTeam: "AlWahda",
+          awayTeam: "AlAshrafieh",
+          category: "Women U18 D1",
+          fee: 3587,
+          paid: true,
+          crew: { cc: "Hussam Tello", u1: "Khalil AlAbtah", u2: sampleName }
+        })
+      ];
+
+      games = [...games, ...samples];
+      saveGames();
+      render();
+    }
+  </script>
+</body>
+</html>
